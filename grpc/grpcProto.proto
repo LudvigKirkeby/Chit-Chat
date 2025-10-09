@@ -1,12 +1,16 @@
 syntax = "proto3";
 option go_package = "handin-3/grpc/grpcProto"; // Path to proto file
 
-message Time {
-    string time = 1;
+message Message {
+    repeated string time = 1;
+    repeated string component_name = 2;
+    repeated string event_type = 3;
+    repeated string relevant_identifiers = 4;
 }
 
 message Empty {}
 
 service TimeService {
-    rpc GetTime (Empty) returns (Time) {};
+    rpc GetMessages (Empty) returns (Message) {}
+    rpc SendMessage (Message) returns (Empty) {}
 }

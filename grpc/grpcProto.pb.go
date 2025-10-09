@@ -21,27 +21,30 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type Time struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Time          string                 `protobuf:"bytes,1,opt,name=time,proto3" json:"time,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type Message struct {
+	state               protoimpl.MessageState `protogen:"open.v1"`
+	Time                []string               `protobuf:"bytes,1,rep,name=time,proto3" json:"time,omitempty"`
+	ComponentName       []string               `protobuf:"bytes,2,rep,name=component_name,json=componentName,proto3" json:"component_name,omitempty"`
+	EventType           []string               `protobuf:"bytes,3,rep,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`
+	RelevantIdentifiers []string               `protobuf:"bytes,4,rep,name=relevant_identifiers,json=relevantIdentifiers,proto3" json:"relevant_identifiers,omitempty"`
+	unknownFields       protoimpl.UnknownFields
+	sizeCache           protoimpl.SizeCache
 }
 
-func (x *Time) Reset() {
-	*x = Time{}
+func (x *Message) Reset() {
+	*x = Message{}
 	mi := &file_grpcProto_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *Time) String() string {
+func (x *Message) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*Time) ProtoMessage() {}
+func (*Message) ProtoMessage() {}
 
-func (x *Time) ProtoReflect() protoreflect.Message {
+func (x *Message) ProtoReflect() protoreflect.Message {
 	mi := &file_grpcProto_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,16 +56,37 @@ func (x *Time) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use Time.ProtoReflect.Descriptor instead.
-func (*Time) Descriptor() ([]byte, []int) {
+// Deprecated: Use Message.ProtoReflect.Descriptor instead.
+func (*Message) Descriptor() ([]byte, []int) {
 	return file_grpcProto_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Time) GetTime() string {
+func (x *Message) GetTime() []string {
 	if x != nil {
 		return x.Time
 	}
-	return ""
+	return nil
+}
+
+func (x *Message) GetComponentName() []string {
+	if x != nil {
+		return x.ComponentName
+	}
+	return nil
+}
+
+func (x *Message) GetEventType() []string {
+	if x != nil {
+		return x.EventType
+	}
+	return nil
+}
+
+func (x *Message) GetRelevantIdentifiers() []string {
+	if x != nil {
+		return x.RelevantIdentifiers
+	}
+	return nil
 }
 
 type Empty struct {
@@ -105,12 +129,17 @@ var File_grpcProto_proto protoreflect.FileDescriptor
 
 const file_grpcProto_proto_rawDesc = "" +
 	"\n" +
-	"\x0fgrpcProto.proto\"\x1a\n" +
-	"\x04Time\x12\x12\n" +
-	"\x04time\x18\x01 \x01(\tR\x04time\"\a\n" +
-	"\x05Empty2)\n" +
-	"\vTimeService\x12\x1a\n" +
-	"\aGetTime\x12\x06.Empty\x1a\x05.Time\"\x00B\x19Z\x17handin-3/grpc/grpcProtob\x06proto3"
+	"\x0fgrpcProto.proto\"\x96\x01\n" +
+	"\aMessage\x12\x12\n" +
+	"\x04time\x18\x01 \x03(\tR\x04time\x12%\n" +
+	"\x0ecomponent_name\x18\x02 \x03(\tR\rcomponentName\x12\x1d\n" +
+	"\n" +
+	"event_type\x18\x03 \x03(\tR\teventType\x121\n" +
+	"\x14relevant_identifiers\x18\x04 \x03(\tR\x13relevantIdentifiers\"\a\n" +
+	"\x05Empty2S\n" +
+	"\vTimeService\x12!\n" +
+	"\vGetMessages\x12\x06.Empty\x1a\b.Message\"\x00\x12!\n" +
+	"\vSendMessage\x12\b.Message\x1a\x06.Empty\"\x00B\x19Z\x17handin-3/grpc/grpcProtob\x06proto3"
 
 var (
 	file_grpcProto_proto_rawDescOnce sync.Once
@@ -126,14 +155,16 @@ func file_grpcProto_proto_rawDescGZIP() []byte {
 
 var file_grpcProto_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_grpcProto_proto_goTypes = []any{
-	(*Time)(nil),  // 0: Time
-	(*Empty)(nil), // 1: Empty
+	(*Message)(nil), // 0: Message
+	(*Empty)(nil),   // 1: Empty
 }
 var file_grpcProto_proto_depIdxs = []int32{
-	1, // 0: TimeService.GetTime:input_type -> Empty
-	0, // 1: TimeService.GetTime:output_type -> Time
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	1, // 0: TimeService.GetMessages:input_type -> Empty
+	0, // 1: TimeService.SendMessage:input_type -> Message
+	0, // 2: TimeService.GetMessages:output_type -> Message
+	1, // 3: TimeService.SendMessage:output_type -> Empty
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name

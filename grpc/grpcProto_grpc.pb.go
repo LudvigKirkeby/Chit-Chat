@@ -19,14 +19,16 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TimeService_GetTime_FullMethodName = "/TimeService/GetTime"
+	TimeService_GetMessages_FullMethodName = "/TimeService/GetMessages"
+	TimeService_SendMessage_FullMethodName = "/TimeService/SendMessage"
 )
 
 // TimeServiceClient is the client API for TimeService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TimeServiceClient interface {
-	GetTime(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Time, error)
+	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Message, error)
+	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error)
 }
 
 type timeServiceClient struct {
@@ -37,10 +39,20 @@ func NewTimeServiceClient(cc grpc.ClientConnInterface) TimeServiceClient {
 	return &timeServiceClient{cc}
 }
 
-func (c *timeServiceClient) GetTime(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Time, error) {
+func (c *timeServiceClient) GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Message, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Time)
-	err := c.cc.Invoke(ctx, TimeService_GetTime_FullMethodName, in, out, cOpts...)
+	out := new(Message)
+	err := c.cc.Invoke(ctx, TimeService_GetMessages_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *timeServiceClient) SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Empty)
+	err := c.cc.Invoke(ctx, TimeService_SendMessage_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +63,8 @@ func (c *timeServiceClient) GetTime(ctx context.Context, in *Empty, opts ...grpc
 // All implementations must embed UnimplementedTimeServiceServer
 // for forward compatibility.
 type TimeServiceServer interface {
-	GetTime(context.Context, *Empty) (*Time, error)
+	GetMessages(context.Context, *Empty) (*Message, error)
+	SendMessage(context.Context, *Message) (*Empty, error)
 	mustEmbedUnimplementedTimeServiceServer()
 }
 
@@ -62,8 +75,11 @@ type TimeServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedTimeServiceServer struct{}
 
-func (UnimplementedTimeServiceServer) GetTime(context.Context, *Empty) (*Time, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetTime not implemented")
+func (UnimplementedTimeServiceServer) GetMessages(context.Context, *Empty) (*Message, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+}
+func (UnimplementedTimeServiceServer) SendMessage(context.Context, *Message) (*Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
 }
 func (UnimplementedTimeServiceServer) mustEmbedUnimplementedTimeServiceServer() {}
 func (UnimplementedTimeServiceServer) testEmbeddedByValue()                     {}
@@ -86,20 +102,38 @@ func RegisterTimeServiceServer(s grpc.ServiceRegistrar, srv TimeServiceServer) {
 	s.RegisterService(&TimeService_ServiceDesc, srv)
 }
 
-func _TimeService_GetTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TimeService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TimeServiceServer).GetTime(ctx, in)
+		return srv.(TimeServiceServer).GetMessages(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: TimeService_GetTime_FullMethodName,
+		FullMethod: TimeService_GetMessages_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TimeServiceServer).GetTime(ctx, req.(*Empty))
+		return srv.(TimeServiceServer).GetMessages(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _TimeService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Message)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TimeServiceServer).SendMessage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TimeService_SendMessage_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TimeServiceServer).SendMessage(ctx, req.(*Message))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -112,8 +146,12 @@ var TimeService_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TimeServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetTime",
-			Handler:    _TimeService_GetTime_Handler,
+			MethodName: "GetMessages",
+			Handler:    _TimeService_GetMessages_Handler,
+		},
+		{
+			MethodName: "SendMessage",
+			Handler:    _TimeService_SendMessage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
