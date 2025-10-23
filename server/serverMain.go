@@ -28,8 +28,6 @@ func main() {
 }
 
 func (s *system) broadcast(msg string) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
 	log.Printf("Broadcasting message to clients")
 
 	for id, client := range s.clients {
@@ -41,7 +39,6 @@ func (s *system) broadcast(msg string) {
 			log.Printf("Error sending to Client %d: %v", id, err)
 		}
 	}
-	s.mutex.Unlock()
 }
 
 // joins a client, gives id, and strats goroutine
@@ -62,12 +59,12 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 			msg, err := stream.Recv() // waits for client msg
 			if err != nil {
 				s.removeClient(clientID)
-				s.broadcast("Participant left chat")
+				s.broadcast(fmt.Sprintf("Participant %d left chat", clientID))
 				// should remove the client and broadcast that they disconnected
 				return
 			}
 			// broadcast msg
-			s.broadcast(msg.GetText())
+			s.broadcast(fmt.Sprintf("Participant %d said: %v", clientID, msg.GetText()))
 		}
 	}()
 
