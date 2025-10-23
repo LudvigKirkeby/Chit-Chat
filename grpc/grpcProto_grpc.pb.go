@@ -19,141 +19,97 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TimeService_GetMessages_FullMethodName = "/TimeService/GetMessages"
-	TimeService_SendMessage_FullMethodName = "/TimeService/SendMessage"
+	MessageService_Join_FullMethodName = "/MessageService/Join"
 )
 
-// TimeServiceClient is the client API for TimeService service.
+// MessageServiceClient is the client API for MessageService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type TimeServiceClient interface {
-	GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Message, error)
-	SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error)
+type MessageServiceClient interface {
+	Join(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Message, Message], error)
 }
 
-type timeServiceClient struct {
+type messageServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTimeServiceClient(cc grpc.ClientConnInterface) TimeServiceClient {
-	return &timeServiceClient{cc}
+func NewMessageServiceClient(cc grpc.ClientConnInterface) MessageServiceClient {
+	return &messageServiceClient{cc}
 }
 
-func (c *timeServiceClient) GetMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Message, error) {
+func (c *messageServiceClient) Join(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[Message, Message], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Message)
-	err := c.cc.Invoke(ctx, TimeService_GetMessages_FullMethodName, in, out, cOpts...)
+	stream, err := c.cc.NewStream(ctx, &MessageService_ServiceDesc.Streams[0], MessageService_Join_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &grpc.GenericClientStream[Message, Message]{ClientStream: stream}
+	return x, nil
 }
 
-func (c *timeServiceClient) SendMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Empty, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(Empty)
-	err := c.cc.Invoke(ctx, TimeService_SendMessage_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type MessageService_JoinClient = grpc.BidiStreamingClient[Message, Message]
 
-// TimeServiceServer is the server API for TimeService service.
-// All implementations must embed UnimplementedTimeServiceServer
+// MessageServiceServer is the server API for MessageService service.
+// All implementations must embed UnimplementedMessageServiceServer
 // for forward compatibility.
-type TimeServiceServer interface {
-	GetMessages(context.Context, *Empty) (*Message, error)
-	SendMessage(context.Context, *Message) (*Empty, error)
-	mustEmbedUnimplementedTimeServiceServer()
+type MessageServiceServer interface {
+	Join(grpc.BidiStreamingServer[Message, Message]) error
+	mustEmbedUnimplementedMessageServiceServer()
 }
 
-// UnimplementedTimeServiceServer must be embedded to have
+// UnimplementedMessageServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedTimeServiceServer struct{}
+type UnimplementedMessageServiceServer struct{}
 
-func (UnimplementedTimeServiceServer) GetMessages(context.Context, *Empty) (*Message, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetMessages not implemented")
+func (UnimplementedMessageServiceServer) Join(grpc.BidiStreamingServer[Message, Message]) error {
+	return status.Errorf(codes.Unimplemented, "method Join not implemented")
 }
-func (UnimplementedTimeServiceServer) SendMessage(context.Context, *Message) (*Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SendMessage not implemented")
-}
-func (UnimplementedTimeServiceServer) mustEmbedUnimplementedTimeServiceServer() {}
-func (UnimplementedTimeServiceServer) testEmbeddedByValue()                     {}
+func (UnimplementedMessageServiceServer) mustEmbedUnimplementedMessageServiceServer() {}
+func (UnimplementedMessageServiceServer) testEmbeddedByValue()                        {}
 
-// UnsafeTimeServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TimeServiceServer will
+// UnsafeMessageServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to MessageServiceServer will
 // result in compilation errors.
-type UnsafeTimeServiceServer interface {
-	mustEmbedUnimplementedTimeServiceServer()
+type UnsafeMessageServiceServer interface {
+	mustEmbedUnimplementedMessageServiceServer()
 }
 
-func RegisterTimeServiceServer(s grpc.ServiceRegistrar, srv TimeServiceServer) {
-	// If the following call pancis, it indicates UnimplementedTimeServiceServer was
+func RegisterMessageServiceServer(s grpc.ServiceRegistrar, srv MessageServiceServer) {
+	// If the following call pancis, it indicates UnimplementedMessageServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&TimeService_ServiceDesc, srv)
+	s.RegisterService(&MessageService_ServiceDesc, srv)
 }
 
-func _TimeService_GetMessages_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Empty)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TimeServiceServer).GetMessages(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TimeService_GetMessages_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TimeServiceServer).GetMessages(ctx, req.(*Empty))
-	}
-	return interceptor(ctx, in, info, handler)
+func _MessageService_Join_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(MessageServiceServer).Join(&grpc.GenericServerStream[Message, Message]{ServerStream: stream})
 }
 
-func _TimeService_SendMessage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Message)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(TimeServiceServer).SendMessage(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: TimeService_SendMessage_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TimeServiceServer).SendMessage(ctx, req.(*Message))
-	}
-	return interceptor(ctx, in, info, handler)
-}
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type MessageService_JoinServer = grpc.BidiStreamingServer[Message, Message]
 
-// TimeService_ServiceDesc is the grpc.ServiceDesc for TimeService service.
+// MessageService_ServiceDesc is the grpc.ServiceDesc for MessageService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var TimeService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "TimeService",
-	HandlerType: (*TimeServiceServer)(nil),
-	Methods: []grpc.MethodDesc{
+var MessageService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "MessageService",
+	HandlerType: (*MessageServiceServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "GetMessages",
-			Handler:    _TimeService_GetMessages_Handler,
-		},
-		{
-			MethodName: "SendMessage",
-			Handler:    _TimeService_SendMessage_Handler,
+			StreamName:    "Join",
+			Handler:       _MessageService_Join_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "grpcProto.proto",
 }
