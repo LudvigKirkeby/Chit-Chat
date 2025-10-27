@@ -17,23 +17,27 @@ type Client struct {
 
 type system struct {
 	proto.UnimplementedMessageServiceServer
-	mutex   sync.Mutex // lock to avoid weird data problems
-	clients map[int]*Client
-	nextID  int
+	mutex      sync.Mutex // lock to avoid weird data problems
+	clients    map[int]*Client
+	nextID     int
+	localClock int64
 }
 
 func main() {
-	server := &system{clients: make(map[int]*Client), nextID: 1}
+	server := &system{clients: make(map[int]*Client), nextID: 1, localClock: 1}
 	server.start_server()
 }
 
 func (s *system) broadcast(msg string) {
-	log.Printf("Broadcasting message to clients")
 
 	for id, client := range s.clients {
+		s.mutex.Lock()
+		s.localClock++
+		s.mutex.Unlock()
+		log.Printf("Broadcasting message '%v' to client %v at logical time %d", msg, id, s.localClock)
 		err := client.Stream.Send(&proto.Message{
-			LamportTime: time.Now().UnixNano(),
-			Text:        msg,
+			LamportClock: s.localClock,
+			Text:         msg,
 		})
 		if err != nil {
 			log.Printf("Error sending to Client %d: %v", id, err)
@@ -51,7 +55,7 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 	s.mutex.Unlock()
 
 	// join msg
-	s.broadcast(fmt.Sprintf("Participant %d joined Chit Chat", clientID))
+	s.broadcast(fmt.Sprintf("Participant %d joined Chit Chat at logical time %v", clientID, s.localClock))
 
 	// Dedicated goroutine for this client
 	go func() { // go func runs a concurrent function
@@ -59,11 +63,14 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 			msg, err := stream.Recv() // waits for client msg
 			if err != nil {
 				s.removeClient(clientID)
-				s.broadcast(fmt.Sprintf("Participant %d left Chit Chat at logical time %v", clientID))
+				s.broadcast(fmt.Sprintf("Participant %d left Chit Chat at logical time %v", clientID, s.localClock))
 				// should remove the client and broadcast that they disconnected
 				return
 			}
-			// broadcast msg
+			s.mutex.Lock()
+			s.localClock = max(s.localClock, msg.LamportClock) + 1
+			s.mutex.Unlock()
+			// broadcast msg, this might be wrong
 			s.broadcast(fmt.Sprintf("Participant %d said: %v", clientID, msg.GetText()))
 		}
 	}()
@@ -75,6 +82,7 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 // deletes client from list
 func (s *system) removeClient(id int) {
 	s.mutex.Lock()
+	s.localClock++
 	delete(s.clients, id)
 	s.mutex.Unlock()
 }

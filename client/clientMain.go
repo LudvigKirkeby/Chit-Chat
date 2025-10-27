@@ -4,12 +4,10 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	proto "handin-3/grpc" // adjust to your generated package path
 	"log"
 	"os"
 	"strings"
-	"time"
-
-	proto "handin-3/grpc" // adjust to your generated package path
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -25,19 +23,23 @@ func main() {
 	client := proto.NewMessageServiceClient(conn)
 	stream, err := client.Join(context.Background())
 	if err != nil {
-		log.Fatalf("open Join stream: %v", err)
+		log.Fatalf("Error opening stream for client %v, err: %v", client, err)
 	}
+
+	recvCh := make(chan *proto.Message)
+	sendCh := make(chan string)
 
 	// receiver goroutine: prints any broadcasts
 	go func() {
+		// Local lamport
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
 				log.Println("receive error (server closed?):", err)
 				return
 			}
-			Time := time.Unix(0, msg.LamportTime)
-			fmt.Printf("[%v] %s\n", Time.Format("2006-01-02 15:04:05"), msg.GetText())
+			recvCh <- msg
+			//fmt.Printf("[%v] %s\n", Time.Format("2006-01-02 15:04:05"), msg.GetText())
 		}
 	}()
 

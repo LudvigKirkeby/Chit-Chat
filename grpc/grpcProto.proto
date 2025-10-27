@@ -2,7 +2,7 @@ syntax = "proto3";
 option go_package = "handin-3/grpc/grpcProto"; // Path to proto file
 
 message Message {
-    int64 lamport_time = 1;
+    int64 lamport_clock = 1;
     string text = 2;
 }
 

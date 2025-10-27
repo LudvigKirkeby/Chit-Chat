@@ -23,7 +23,7 @@ const (
 
 type Message struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	LamportTime   int64                  `protobuf:"varint,1,opt,name=lamport_time,json=lamportTime,proto3" json:"lamport_time,omitempty"`
+	LamportClock  int64                  `protobuf:"varint,1,opt,name=lamport_clock,json=lamportClock,proto3" json:"lamport_clock,omitempty"`
 	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -59,9 +59,9 @@ func (*Message) Descriptor() ([]byte, []int) {
 	return file_grpcProto_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *Message) GetLamportTime() int64 {
+func (x *Message) GetLamportClock() int64 {
 	if x != nil {
-		return x.LamportTime
+		return x.LamportClock
 	}
 	return 0
 }
@@ -113,9 +113,9 @@ var File_grpcProto_proto protoreflect.FileDescriptor
 
 const file_grpcProto_proto_rawDesc = "" +
 	"\n" +
-	"\x0fgrpcProto.proto\"@\n" +
-	"\aMessage\x12!\n" +
-	"\flamport_time\x18\x01 \x01(\x03R\vlamportTime\x12\x12\n" +
+	"\x0fgrpcProto.proto\"B\n" +
+	"\aMessage\x12#\n" +
+	"\rlamport_clock\x18\x01 \x01(\x03R\flamportClock\x12\x12\n" +
 	"\x04text\x18\x02 \x01(\tR\x04text\"\a\n" +
 	"\x05Empty22\n" +
 	"\x0eMessageService\x12 \n" +
