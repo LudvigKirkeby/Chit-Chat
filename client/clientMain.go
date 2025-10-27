@@ -35,7 +35,7 @@ func main() {
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
-				log.Println("receive error (server closed?):", err)
+				log.Println("Server has probably been closed. Further error message:", err)
 				return
 			}
 			recvCh <- msg
@@ -78,6 +78,11 @@ func main() {
 			// increment clock cause we are sending something
 			localClock++
 
+			if len(line) > 128 {
+				fmt.Printf("Your message was not sent. Reason: Too large")
+				continue
+			}
+
 			// define msg to send, use "line" from ch
 			out := &proto.Message{
 				LamportClock: localClock,
@@ -95,7 +100,7 @@ func main() {
 				continue
 			}
 			localClock = max(localClock, msg.LamportClock) + 1
-			fmt.Printf("[Client Logical Time %d] %s\n", localClock, msg.GetText())
+			fmt.Printf("[Logical Time %d] %s\n", localClock, msg.GetText())
 		}
 	}
 }

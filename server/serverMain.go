@@ -103,6 +103,8 @@ func (s *system) start_server() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	log.Printf("grpc server %v started with listener %v at TCP address 8080", grpc_server, listener)
 }
 
 //func (s *system) GetTime(ctx context.Context, in *proto.Empty) (*proto.Message, error) {
