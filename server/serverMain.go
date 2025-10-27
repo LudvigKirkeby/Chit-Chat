@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"sync"
-	"time"
 )
 
 type Client struct {

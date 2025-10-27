@@ -44,18 +44,58 @@ func main() {
 	}()
 
 	// main goroutine: read stdin and send
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Println("Type messages and press Enter to send.")
-	for scanner.Scan() {
-		line := strings.TrimSpace(scanner.Text())
-		if line == "" {
-			continue
+	go func() {
+		scanner := bufio.NewScanner(os.Stdin)
+		fmt.Println("Type messages and press Enter to send.")
+		for scanner.Scan() {
+			line := strings.TrimSpace(scanner.Text())
+			if line == "" {
+				continue
+			}
+			sendCh <- line
 		}
-		if err := stream.Send(&proto.Message{Text: line}); err != nil {
-			log.Println("send error:", err)
+		// close send side and exit
+		close(sendCh)
+	}()
+
+	// essentially "main" for the goroutines
+	// local lamport set to 0
+	var localClock = int64(0)
+
+	for {
+		// open says if channel still open
+		if sendCh == nil && recvCh == nil {
 			break
 		}
+		select {
+		case line, open := <-sendCh:
+			if !open {
+				_ = stream.CloseSend()
+				sendCh = nil
+				continue
+			}
+
+			// increment clock cause we are sending something
+			localClock++
+
+			// define msg to send, use "line" from ch
+			out := &proto.Message{
+				LamportClock: localClock,
+				Text:         line,
+			}
+
+			if err := stream.Send(out); err != nil {
+				log.Println("error on sending: ", err)
+			}
+
+		case msg, open := <-recvCh:
+			if !open {
+				_ = stream.CloseSend()
+				recvCh = nil
+				continue
+			}
+			localClock = max(localClock, msg.LamportClock) + 1
+			fmt.Printf("[Client Logical Time %d] %s\n", localClock, msg.GetText())
+		}
 	}
-	// close send side and exit
-	_ = stream.CloseSend()
 }
