@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	proto "handin-3/grpc" // adjust to your generated package path
 
@@ -35,7 +36,8 @@ func main() {
 				log.Println("receive error (server closed?):", err)
 				return
 			}
-			fmt.Printf("[broadcast] %s\n", msg.GetText())
+			Time := time.Unix(0, msg.LamportTime)
+			fmt.Printf("[%v] %s\n", Time.Format("2006-01-02 15:04:05"), msg.GetText())
 		}
 	}()
 

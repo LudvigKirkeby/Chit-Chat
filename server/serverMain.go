@@ -59,7 +59,7 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 			msg, err := stream.Recv() // waits for client msg
 			if err != nil {
 				s.removeClient(clientID)
-				s.broadcast(fmt.Sprintf("Participant %d left chat", clientID))
+				s.broadcast(fmt.Sprintf("Participant %d left Chit Chat at logical time %v", clientID))
 				// should remove the client and broadcast that they disconnected
 				return
 			}
