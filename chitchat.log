@@ -1,0 +1,20 @@
+[SERVER] 2025/10/29 16:35:33.317810 [STARTUP] Startup port=8080
+[SERVER] 2025/10/29 16:35:37.485334 [CONNECT] Client 1 joined Chit Chat at logical time 0
+[SERVER] 2025/10/29 16:35:37.485412 [SEND] 'Client 1 joined Chit Chat at logical time 0' to client 1 at logical time 1
+[CLIENT] 2025/10/29 16:35:37.486185 [RECEIVE] 'Client 1 joined Chit Chat at logical time 0' from server at Logical time 1
+[SERVER] 2025/10/29 16:35:40.056695 [CONNECT] Client 2 joined Chit Chat at logical time 1
+[SERVER] 2025/10/29 16:35:40.056755 [SEND] 'Client 2 joined Chit Chat at logical time 1' to client 1 at logical time 2
+[SERVER] 2025/10/29 16:35:40.056828 [SEND] 'Client 2 joined Chit Chat at logical time 1' to client 2 at logical time 3
+[CLIENT] 2025/10/29 16:35:40.057054 [RECEIVE] 'Client 2 joined Chit Chat at logical time 1' from server at Logical time 2
+[CLIENT] 2025/10/29 16:35:40.057754 [RECEIVE] 'Client 2 joined Chit Chat at logical time 1' from server at Logical time 3
+[CLIENT] 2025/10/29 16:35:52.710281 [SEND] 'hey there!' to Server at Logical Clock 4
+[SERVER] 2025/10/29 16:35:52.710750 [RECEIVE] 'hey there!' from client 1 at Logical time 4
+[SERVER] 2025/10/29 16:35:52.710827 [SEND] 'Client 1 said: hey there!' to client 1 at logical time 6
+[SERVER] 2025/10/29 16:35:52.710916 [SEND] 'Client 1 said: hey there!' to client 2 at logical time 7
+[CLIENT] 2025/10/29 16:35:52.711123 [RECEIVE] 'Client 1 said: hey there!' from server at Logical time 6
+[CLIENT] 2025/10/29 16:35:52.711290 [RECEIVE] 'Client 1 said: hey there!' from server at Logical time 7
+[SERVER] 2025/10/29 16:36:37.392742 [DISCONNECT] Client 1 left Chit Chat at logical time 8
+[SERVER] 2025/10/29 16:36:37.392816 [SEND] 'Client 1 left Chit Chat at logical time 8' to client 2 at logical time 9
+[CLIENT] 2025/10/29 16:36:37.393082 [RECEIVE] 'Client 1 left Chit Chat at logical time 8' from server at Logical time 9
+[SERVER] 2025/10/29 16:36:40.143266 [DISCONNECT] Client 2 left Chit Chat at logical time 10
+[SERVER] 2025/10/29 16:36:53.651652 [SHUTDOWN] Server shutting down
