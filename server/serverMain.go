@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"google.golang.org/grpc"
 	proto "handin-3/grpc"
 	"log"
 	"net"
+	"os"
 	"sync"
+
+	"google.golang.org/grpc"
 )
 
 type Client struct {
@@ -22,7 +24,24 @@ type system struct {
 	localClock int64
 }
 
+var serverLogger *log.Logger
+
 func main() {
+	port := 8080
+	f, err := os.OpenFile("server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		log.Fatalf("failed to open log file: %v", err)
+	}
+	// ensure it's closed on exit
+	defer f.Close()
+
+	// create a server-specific logger (doesn't change global logger)
+	flags := log.LstdFlags | log.Lmicroseconds
+	serverLogger = log.New(f, "Server ", flags)
+
+	// use serverLogger.Printf instead of log.Printf
+	serverLogger.Printf("Startup port=%d", port)
+
 	server := &system{clients: make(map[int]*Client), nextID: 1, localClock: 1}
 	server.start_server()
 }
@@ -33,13 +52,13 @@ func (s *system) broadcast(msg string) {
 		s.mutex.Lock()
 		s.localClock++
 		s.mutex.Unlock()
-		log.Printf("Broadcasting message '%v' to client %v at logical time %d", msg, id, s.localClock)
+		serverLogger.Printf("Broadcasting message '%v' to client %v at logical time %d", msg, id, s.localClock)
 		err := client.Stream.Send(&proto.Message{
 			LamportClock: s.localClock,
 			Text:         msg,
 		})
 		if err != nil {
-			log.Printf("Error sending to Client %d: %v", id, err)
+			serverLogger.Printf("Error sending to Client %d: %v", id, err)
 		}
 	}
 }
@@ -104,7 +123,7 @@ func (s *system) start_server() {
 		log.Fatal(err)
 	}
 
-	log.Printf("grpc server %v started with listener %v at TCP address 8080", grpc_server, listener)
+	serverLogger.Printf("grpc server %v started with listener %v at TCP address 8080", grpc_server, listener)
 }
 
 //func (s *system) GetTime(ctx context.Context, in *proto.Empty) (*proto.Message, error) {
