@@ -113,7 +113,7 @@ func main() {
 				recvCh = nil
 				continue
 			}
-			clientLogger.Printf("[RECEIVE] Received messsage %v from server at Logical time %d", msg, msg.GetLamportClock())
+			clientLogger.Printf("[RECEIVE] Received messsage %v from server at Logical time %d", msg.Text, msg.GetLamportClock())
 			localClock = max(localClock, msg.LamportClock) + 1
 			fmt.Printf("[Logical Time %d] %s\n", localClock, msg.GetText())
 		}
