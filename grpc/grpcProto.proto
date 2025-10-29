@@ -6,7 +6,6 @@ message Message {
     string text = 2;
 }
 
-message Empty {}
 
 service MessageService {
     rpc Join(stream Message) returns (stream Message) {} // bidirectional
