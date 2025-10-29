@@ -102,7 +102,7 @@ func main() {
 				Text:         line,
 			}
 
-			clientLogger.Printf("[SEND] Sending message %v to Server at Logical Clock %d", line, localClock)
+			clientLogger.Printf("[SEND] '%v' to Server at Logical Clock %d", line, localClock)
 			if err := stream.Send(out); err != nil {
 				clientLogger.Println("[ERROR] error on sending: ", err)
 			}
@@ -113,7 +113,7 @@ func main() {
 				recvCh = nil
 				continue
 			}
-			clientLogger.Printf("[RECEIVE] Received messsage %v from server at Logical time %d", msg.Text, msg.GetLamportClock())
+			clientLogger.Printf("[RECEIVE] '%v' from server at Logical time %d", msg.Text, msg.GetLamportClock())
 			localClock = max(localClock, msg.LamportClock) + 1
 			fmt.Printf("[Logical Time %d] %s\n", localClock, msg.GetText())
 		}

@@ -52,7 +52,7 @@ func (s *system) broadcast(msg string) {
 		s.mutex.Lock()
 		s.localClock++
 		s.mutex.Unlock()
-		serverLogger.Printf("[SEND] Sending message '%v' to client %v at logical time %d", msg, id, s.localClock)
+		serverLogger.Printf("[SEND] '%v' to client %v at logical time %d", msg, id, s.localClock)
 		err := client.Stream.Send(&proto.Message{
 			LamportClock: s.localClock,
 			Text:         msg,
@@ -89,7 +89,7 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 			}
 			s.mutex.Lock()
 			s.localClock = max(s.localClock, msg.LamportClock) + 1
-			serverLogger.Printf("[RECEIVE] Message %v received from client %d at Logical time %d", msg.Text, clientID, msg.GetLamportClock())
+			serverLogger.Printf("[RECEIVE] '%v' from client %d at Logical time %d", msg.Text, clientID, msg.GetLamportClock())
 			s.mutex.Unlock()
 			// broadcast msg, this might be wrong
 			s.broadcast(fmt.Sprintf("Client %d said: %v", clientID, msg.GetText()))
