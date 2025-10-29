@@ -6,7 +6,9 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"google.golang.org/grpc"
 )
@@ -28,7 +30,7 @@ var serverLogger *log.Logger
 
 func main() {
 	port := 8080
-	f, err := os.OpenFile("chitchat.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	f, err := os.OpenFile("../chitchat.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		serverLogger.Fatalf("failed to open log file: %v", err)
 	}
@@ -41,6 +43,14 @@ func main() {
 
 	// use serverLogger.Printf instead of log.Printf
 	serverLogger.Printf("[STARTUP] Startup port=%d", port)
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-c
+		serverLogger.Printf("[SHUTDOWN] Server shutting down")
+		os.Exit(0)
+	}()
 
 	server := &system{clients: make(map[int]*Client), nextID: 1, localClock: 0}
 	server.start_server()
@@ -128,21 +138,3 @@ func (s *system) start_server() {
 
 	serverLogger.Printf("grpc server %v started with listener %v at TCP address 8080", grpc_server, listener)
 }
-
-//func (s *system) GetTime(ctx context.Context, in *proto.Empty) (*proto.Message, error) {
-//	return &proto.Message{Time: []string{time.Now().String()}}, nil
-//}
-
-/*
-func (s *system) SendMessage(ctx context.Context, in *proto.Message) (*proto.Empty, error) {
-	//log that the message vas received in the server via RPC
-	log.Printf("Received message via sendMessage RPC")
-	//call broadcast function to share message with everyone
-	msg, err := context.Background(), in.Text
-	if err != nil {
-		return
-	}
-	s.broadcast(msg)
-}
-
-*/

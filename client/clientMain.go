@@ -18,11 +18,11 @@ var clientLogger *log.Logger
 func main() {
 	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("dial: %v", err)
+		clientLogger.Fatalf("dial: %v", err)
 	}
 	defer conn.Close()
 
-	f, err := os.OpenFile("../server/chitchat.log", os.O_WRONLY|os.O_APPEND, 0644)
+	f, err := os.OpenFile("../chitchat.log", os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		clientLogger.Fatalf("failed to open log file: %v", err)
 	}
@@ -42,9 +42,8 @@ func main() {
 	recvCh := make(chan *proto.Message)
 	sendCh := make(chan string)
 
-	// receiver goroutine: prints any broadcasts
+	// receiver goroutine: sends any broadcasts to receive channel
 	go func() {
-		// Local lamport
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
@@ -52,11 +51,10 @@ func main() {
 				return
 			}
 			recvCh <- msg
-			//fmt.Printf("[%v] %s\n", Time.Format("2006-01-02 15:04:05"), msg.GetText())
 		}
 	}()
 
-	// main goroutine: read stdin and send
+	// goroutine for sending messages, reads input, sends to channel
 	go func() {
 		scanner := bufio.NewScanner(os.Stdin)
 		fmt.Println("Type messages and press Enter to send.")
@@ -76,7 +74,7 @@ func main() {
 	var localClock = int64(0)
 
 	for {
-		// open says if channel still open
+		// check if channels r empty
 		if sendCh == nil && recvCh == nil {
 			break
 		}
