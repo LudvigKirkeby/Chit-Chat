@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var clientLogger *log.Logger
+
 func main() {
 	conn, err := grpc.NewClient("localhost:8080", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -20,10 +22,21 @@ func main() {
 	}
 	defer conn.Close()
 
+	f, err := os.OpenFile("../server/chitchat.log", os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		clientLogger.Fatalf("failed to open log file: %v", err)
+	}
+	// ensure it's closed on exit
+	defer f.Close()
+
+	// create a server-specific logger (doesn't change global logger)
+	flags := log.Ldate | log.Ltime | log.Lmicroseconds
+	clientLogger = log.New(f, "[CLIENT] ", flags)
+
 	client := proto.NewMessageServiceClient(conn)
 	stream, err := client.Join(context.Background())
 	if err != nil {
-		log.Fatalf("Error opening stream for client %v, err: %v", client, err)
+		clientLogger.Fatalf("[ERROR] Error opening stream for client %v, err: %v", client, err)
 	}
 
 	recvCh := make(chan *proto.Message)
@@ -35,7 +48,7 @@ func main() {
 		for {
 			msg, err := stream.Recv()
 			if err != nil {
-				log.Println("Server has probably been closed. Further error message:", err)
+				clientLogger.Println("[ERROR] Server has probably been closed. Further error message:", err)
 				return
 			}
 			recvCh <- msg
@@ -89,8 +102,9 @@ func main() {
 				Text:         line,
 			}
 
+			clientLogger.Printf("[SEND] Sending message %v to Server at Logical Clock %d", line, localClock)
 			if err := stream.Send(out); err != nil {
-				log.Println("error on sending: ", err)
+				clientLogger.Println("[ERROR] error on sending: ", err)
 			}
 
 		case msg, open := <-recvCh:
@@ -99,6 +113,7 @@ func main() {
 				recvCh = nil
 				continue
 			}
+			clientLogger.Printf("[RECEIVE] Received messsage %v from server at Logical time %d", msg, msg.GetLamportClock())
 			localClock = max(localClock, msg.LamportClock) + 1
 			fmt.Printf("[Logical Time %d] %s\n", localClock, msg.GetText())
 		}

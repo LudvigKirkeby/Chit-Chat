@@ -28,21 +28,21 @@ var serverLogger *log.Logger
 
 func main() {
 	port := 8080
-	f, err := os.OpenFile("server.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	f, err := os.OpenFile("chitchat.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		log.Fatalf("failed to open log file: %v", err)
+		serverLogger.Fatalf("failed to open log file: %v", err)
 	}
 	// ensure it's closed on exit
 	defer f.Close()
 
 	// create a server-specific logger (doesn't change global logger)
-	flags := log.LstdFlags | log.Lmicroseconds
-	serverLogger = log.New(f, "Server ", flags)
+	flags := log.Ldate | log.Ltime | log.Lmicroseconds
+	serverLogger = log.New(f, "[SERVER] ", flags)
 
 	// use serverLogger.Printf instead of log.Printf
-	serverLogger.Printf("Startup port=%d", port)
+	serverLogger.Printf("[STARTUP] Startup port=%d", port)
 
-	server := &system{clients: make(map[int]*Client), nextID: 1, localClock: 1}
+	server := &system{clients: make(map[int]*Client), nextID: 1, localClock: 0}
 	server.start_server()
 }
 
@@ -52,7 +52,7 @@ func (s *system) broadcast(msg string) {
 		s.mutex.Lock()
 		s.localClock++
 		s.mutex.Unlock()
-		serverLogger.Printf("Broadcasting message '%v' to client %v at logical time %d", msg, id, s.localClock)
+		serverLogger.Printf("[SEND] Sending message '%v' to client %v at logical time %d", msg, id, s.localClock)
 		err := client.Stream.Send(&proto.Message{
 			LamportClock: s.localClock,
 			Text:         msg,
@@ -71,9 +71,10 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 	client := &Client{ID: clientID, Stream: stream} // instantiate a new client
 	s.clients[clientID] = client                    // map client to its ID
 	s.mutex.Unlock()
+	serverLogger.Printf("[CONNECT] Client %d joined Chit Chat at logical time %v", clientID, s.localClock)
 
 	// join msg
-	s.broadcast(fmt.Sprintf("Participant %d joined Chit Chat at logical time %v", clientID, s.localClock))
+	s.broadcast(fmt.Sprintf("Client %d joined Chit Chat at logical time %v", clientID, s.localClock))
 
 	// Dedicated goroutine for this client
 	go func() { // go func runs a concurrent function
@@ -81,15 +82,17 @@ func (s *system) Join(stream proto.MessageService_JoinServer) error {
 			msg, err := stream.Recv() // waits for client msg
 			if err != nil {
 				s.removeClient(clientID)
-				s.broadcast(fmt.Sprintf("Participant %d left Chit Chat at logical time %v", clientID, s.localClock))
+				serverLogger.Printf("[DISCONNECT] Client %d left Chit Chat at logical time %v", clientID, s.localClock)
+				s.broadcast(fmt.Sprintf("Client %d left Chit Chat at logical time %v", clientID, s.localClock))
 				// should remove the client and broadcast that they disconnected
 				return
 			}
 			s.mutex.Lock()
 			s.localClock = max(s.localClock, msg.LamportClock) + 1
+			serverLogger.Printf("[RECEIVE] Message %v received from client %d at Logical time %d", msg.Text, clientID, msg.GetLamportClock())
 			s.mutex.Unlock()
 			// broadcast msg, this might be wrong
-			s.broadcast(fmt.Sprintf("Participant %d said: %v", clientID, msg.GetText()))
+			s.broadcast(fmt.Sprintf("Client %d said: %v", clientID, msg.GetText()))
 		}
 	}()
 
@@ -109,7 +112,7 @@ func (s *system) start_server() {
 	// Listens for requests on port 8080
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
-		log.Fatal(err)
+		serverLogger.Fatal(err)
 	}
 
 	// Makes new GRPC server
@@ -120,7 +123,7 @@ func (s *system) start_server() {
 
 	err = grpc_server.Serve(listener)
 	if err != nil {
-		log.Fatal(err)
+		serverLogger.Fatal(err)
 	}
 
 	serverLogger.Printf("grpc server %v started with listener %v at TCP address 8080", grpc_server, listener)

@@ -1,0 +1,21 @@
+[SERVER] 2025/10/29 16:06:13.253532 [STARTUP] Startup port=8080
+[SERVER] 2025/10/29 16:06:16.260790 [CONNECT] Client 1 joined Chit Chat at logical time 0
+[SERVER] 2025/10/29 16:06:16.260827 [SEND] Sending message 'Client 1 joined Chit Chat at logical time 0' to client 1 at logical time 1
+[CLIENT] 2025/10/29 16:06:16.261187 [RECEIVE] Received messsage lamport_clock:1 text:"Client 1 joined Chit Chat at logical time 0" from server
+[SERVER] 2025/10/29 16:06:18.814465 [CONNECT] Client 2 joined Chit Chat at logical time 1
+[SERVER] 2025/10/29 16:06:18.814498 [SEND] Sending message 'Client 2 joined Chit Chat at logical time 1' to client 1 at logical time 2
+[SERVER] 2025/10/29 16:06:18.814525 [SEND] Sending message 'Client 2 joined Chit Chat at logical time 1' to client 2 at logical time 3
+[CLIENT] 2025/10/29 16:06:18.814620 [RECEIVE] Received messsage lamport_clock:2 text:"Client 2 joined Chit Chat at logical time 1" from server
+[CLIENT] 2025/10/29 16:06:18.814767 [RECEIVE] Received messsage lamport_clock:3 text:"Client 2 joined Chit Chat at logical time 1" from server
+[CLIENT] 2025/10/29 16:06:29.136159 [SEND] Sending message hiii to Server
+[SERVER] 2025/10/29 16:06:29.136382 [RECEIVE] Message lamport_clock:4  text:"hiii" received from client 1
+[SERVER] 2025/10/29 16:06:29.136468 [SEND] Sending message 'Client 1 said: hiii' to client 1 at logical time 6
+[SERVER] 2025/10/29 16:06:29.136481 [SEND] Sending message 'Client 1 said: hiii' to client 2 at logical time 7
+[CLIENT] 2025/10/29 16:06:29.136592 [RECEIVE] Received messsage lamport_clock:7 text:"Client 1 said: hiii" from server
+[CLIENT] 2025/10/29 16:06:29.136627 [RECEIVE] Received messsage lamport_clock:6 text:"Client 1 said: hiii" from server
+[CLIENT] 2025/10/29 16:06:47.355503 [SEND] Sending message hey to Server
+[SERVER] 2025/10/29 16:06:47.355741 [RECEIVE] Message lamport_clock:9  text:"hey" received from client 2
+[SERVER] 2025/10/29 16:06:47.355801 [SEND] Sending message 'Client 2 said: hey' to client 1 at logical time 11
+[SERVER] 2025/10/29 16:06:47.355812 [SEND] Sending message 'Client 2 said: hey' to client 2 at logical time 12
+[CLIENT] 2025/10/29 16:06:47.355913 [RECEIVE] Received messsage lamport_clock:11 text:"Client 2 said: hey" from server
+[CLIENT] 2025/10/29 16:06:47.355927 [RECEIVE] Received messsage lamport_clock:12 text:"Client 2 said: hey" from server
